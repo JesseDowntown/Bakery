@@ -1,0 +1,168 @@
+<html>
+<head>
+  <title>Bakery Bonanza</title>
+  <style type="text/css">
+  #bakery .display div { width: 200px; height: 200px; float: left; }
+  #bakery .display .cupcake { background: url("http://i.imgur.com/9ix2JRZ.jpg"); }
+  #bakery .display .cookie { background: url("http://i.imgur.com/Yxq78qn.jpg"); }
+  #bakery .display .cake { background: url("http://img4-2.myrecipes.timeinc.net/i/recipes/su/07/11/spice-cake-su-1673099-l.jpg"); }
+  </style>
+</head>
+<body>
+
+<div id="bakery">
+  <button class="make" data-good-type="cupcake">Make Cupcake</button>
+  <button class="make" data-good-type="cookie">Make Cookie</button>
+  <button class="make" data-good-type="cake">Make Cake</button>
+  <button class="sell" data-good-type="cupcake">Sell Cupcake</button>
+  <button class="sell" data-good-type="cookie">Sell Cookie</button>
+  <button class="sell" data-good-type="cake">Sell Cake</button><br>
+  <button class="purchase" data-supply-type="flour">Purchase Flour</button>
+  <button class="purchase" data-supply-type="eggs">Purchase Eggs</button>
+  <button class="purchase" data-supply-type="sugar">Purchase Sugar</button>
+  <button class="purchase" data-supply-type="spice">Purchase Spice</button>
+
+  <h4>Available Assets:</h4>
+  <ul class="ingredients">
+    <li class="flour">Flour: <span></span></li>
+    <li class="eggs">Eggs: <span></span></li>
+    <li class="sugar">Sugar: <span></span></li>
+    <li class="spice">Spice: <span></span></li>
+    <li class="money">Money: <span></span></li>
+  </ul>
+
+  <h3>Food Display Case</h3>
+  <div class="display"></div>
+</div>
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+
+var bakery = {
+  money: 0,
+  supplies: {
+    flour: 4,
+    eggs: 12,
+    sugar: 17,
+    spice: 5
+  },
+  goodRequirements: {
+    cupcake: {
+      flour: 2,
+      eggs: 1,
+      sugar: 1,
+      spice: 0,
+      worth: 10
+    },
+    // TODO: Create required ingredients for cookie
+    cookie: {
+      flour: 1,
+      eggs: 1,
+      sugar: 1,
+      spice: 0,
+      worth: 5
+    },
+    cake: {
+      flour: 4,
+      eggs: 2,
+      sugar: 3,
+      spice: 2,
+      worth: 20
+    }
+  },
+  supplyCosts: {
+    flour: {
+      amount: 10,
+      cost: 5
+    },
+    eggs: {
+      amount: 12,
+      cost: 10
+    },
+    sugar: {
+      amount: 10,
+      cost: 5
+    },
+    spice: {
+      amount: 5,
+      cost: 5
+    },
+  },
+  make: function (goodType) {
+    console.log('Attempting to make a:', goodType);
+    var req = this.goodRequirements[goodType];
+
+    // Only make if we have enough ingredients
+    if (req.flour <= this.supplies.flour &&
+        req.eggs <= this.supplies.eggs &&
+        req.sugar <= this.supplies.sugar &&
+        req.spice <= this.supplies.spice) {
+      // Reduce the bakery's supplies by the required amount
+      this.supplies.flour -= req.flour;
+      this.supplies.eggs -= req.eggs;
+      this.supplies.sugar -= req.sugar;
+      this.supplies.spice -= req.spice;
+      this.updateIngredientsList();
+      console.log('The bakery made a ' + goodType + '!');
+
+      // Add goodType class to div (add image)
+      var goodDiv = $('<div>').addClass(goodType); // ASK ABOUT LINE
+      $('#bakery .display').append(goodDiv);
+    } else {
+      console.log('Grumpy cat says: No.');
+    }
+  },
+  updateIngredientsList: function () {
+    $('.ingredients .flour span').text(this.supplies.flour);
+    $('.ingredients .eggs span').text(this.supplies.eggs);
+    $('.ingredients .sugar span').text(this.supplies.sugar);
+    $('.ingredients .spice span').text(this.supplies.spice);
+    $('.ingredients .money span').text(this.money);
+  },
+  sell: function (goodType) {
+    console.log("Sold a:", goodType);
+    var req = this.goodRequirements[goodType];
+
+    this.money += req.worth;
+    this.updateIngredientsList();
+  },
+  purchase: function (supplyType) {
+    console.log("Purchased some more:", supplyType);
+    var purch = this.supplyCosts[supplyType];
+    if (this.money >= purch.cost) {
+      this.money -= purch.cost;
+      this.supplies.flour += purch.amount;
+      this.supplies.eggs += purch.amount;
+      this.supplies.sugar += purch.amount;
+      this.supplies.spice += purch.amount;
+      this.updateIngredientsList();
+    } else {
+      console.log('Grumpy cat says: No.');
+    }
+  }
+};
+
+$('#bakery .make').on('click', function (e) {
+  var goodType = $(e.currentTarget).data('good-type'); // ASK ABOUT LINE
+  // Make the good
+  bakery.make(goodType);
+});
+
+$('#bakery .sell').on('click', function (e) {
+  var goodType = $(e.currentTarget).data('good-type'); // ASK ABOUT LINE
+  // Sell the good
+  bakery.sell(goodType);
+});
+
+$('#bakery .purchase').on('click', function (e) {
+  var supplyType = $(e.currentTarget).data('supply-type');
+  // Purchase supplies
+  bakery.purchase(supplyType);
+});
+
+bakery.updateIngredientsList();
+
+</script>
+</body>
+</html>
